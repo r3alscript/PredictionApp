@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using PredictionApp.Infrastructure.Data;
 
-namespace PredictionApp.Infrastructure
+namespace PredictionApp.Infrastructure.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {
@@ -16,21 +16,22 @@ namespace PredictionApp.Infrastructure
         public IRepository<Prediction> Predictions { get; }
         public IRepository<Motivation> Motivations { get; }
 
-        public UnitOfWork(PredictionAppDbContext context)
+        public UnitOfWork(
+            PredictionAppDbContext context,
+            IRepository<Prediction> predictions,
+            IRepository<Motivation> motivations)
         {
             _context = context;
-            Predictions = new Repository<Prediction>(_context);
-            Motivations = new Repository<Motivation>(_context);
+            Predictions = predictions;
+            Motivations = motivations;
         }
 
-        public async Task<int> CompleteAsync()
-        {
-            return await _context.SaveChangesAsync();
-        }
+        public async Task<int> CompleteAsync() => await _context.SaveChangesAsync();
 
         public void Dispose()
         {
             _context.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -10,12 +10,16 @@ namespace PredictionApp.Domain.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEventHandler<MotivationCreatedEvent> _eventHandler;
-        private readonly Random _random = new();
+        private readonly IRandomProvider _randomProvider;
 
-        public MotivationService(IUnitOfWork unitOfWork, IEventHandler<MotivationCreatedEvent> eventHandler)
+        public MotivationService(
+            IUnitOfWork unitOfWork,
+            IEventHandler<MotivationCreatedEvent> eventHandler,
+            IRandomProvider randomProvider)
         {
             _unitOfWork = unitOfWork;
             _eventHandler = eventHandler;
+            _randomProvider = randomProvider;
         }
 
         public async Task<Motivation> GetRandomMotivationAsync()
@@ -25,11 +29,8 @@ namespace PredictionApp.Domain.Services
             if (all.Count == 0)
                 return new Motivation { Message = "Motivation seems lost. But you can still do it!" };
 
-            var randomMotivation = all[_random.Next(all.Count)];
-
-            var evt = new MotivationCreatedEvent(randomMotivation.Id);
-            _eventHandler.Handle(evt);
-
+            var randomMotivation = all[_randomProvider.Next(all.Count)];
+            _eventHandler.Handle(new MotivationCreatedEvent(randomMotivation.Id));
             return randomMotivation;
         }
     }

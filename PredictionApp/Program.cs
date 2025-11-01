@@ -7,6 +7,8 @@ using PredictionApp.Domain.Interfaces;
 using PredictionApp.Domain.Services;
 using PredictionApp.Middlewares;
 using PredictionApp.Filters;
+using PredictionApp.Domain.Events;
+using PredictionApp.Infrastructure.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,9 @@ builder.Services.AddDbContext<PredictionAppDbContext>(options =>
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IPredictionService, PredictionService>();
 builder.Services.AddScoped<IMotivationService, MotivationService>();
+builder.Services.AddScoped<IEventHandler<PredictionCreatedEvent>, PredictionCreatedEventHandler>();
+builder.Services.AddScoped<IEventHandler<MotivationCreatedEvent>, MotivationCreatedEventHandler>();
+
 
 builder.Services.AddControllers(options =>
 {

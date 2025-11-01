@@ -9,6 +9,9 @@ using PredictionApp.Middlewares;
 using PredictionApp.Filters;
 using PredictionApp.Domain.Events;
 using PredictionApp.Infrastructure.Events;
+using PredictionApp.Infrastructure.Utilities;
+using PredictionApp.Domain.Entities;
+using PredictionApp.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,11 +19,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<PredictionAppDbContext>(options =>
     options.UseSqlite("Data Source=appdata.db"));
 
+builder.Services.AddSingleton<IRandomProvider, RandomProvider>();
+
+builder.Services.AddTransient<IDateTimeProvider, SystemDateTimeProvider>();
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IRepository<Prediction>, Repository<Prediction>>();
+builder.Services.AddScoped<IRepository<Motivation>, Repository<Motivation>>();
 builder.Services.AddScoped<IPredictionService, PredictionService>();
 builder.Services.AddScoped<IMotivationService, MotivationService>();
 builder.Services.AddScoped<IEventHandler<PredictionCreatedEvent>, PredictionCreatedEventHandler>();
 builder.Services.AddScoped<IEventHandler<MotivationCreatedEvent>, MotivationCreatedEventHandler>();
+
 
 
 builder.Services.AddControllers(options =>

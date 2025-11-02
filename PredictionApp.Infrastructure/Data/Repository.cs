@@ -11,7 +11,7 @@ namespace PredictionApp.Infrastructure.Data
 {
     public class Repository<T> : IRepository<T> where T : class
     {
-        private readonly PredictionAppDbContext _context;
+        protected readonly PredictionAppDbContext _context;
 
         public Repository(PredictionAppDbContext context)
         {

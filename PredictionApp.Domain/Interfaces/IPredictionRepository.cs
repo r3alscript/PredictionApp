@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace PredictionApp.Domain.Interfaces
 {
-    public interface IUnitOfWork : IDisposable
+    public interface IPredictionRepository : IRepository<Prediction>
     {
-        IPredictionRepository Predictions { get; }
-        IMotivationRepository Motivations { get; }
-        Task<int> CompleteAsync();
+        Task<Prediction?> GetByMessageAsync(string message);
     }
 }

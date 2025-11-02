@@ -24,8 +24,8 @@ builder.Services.AddSingleton<IRandomProvider, RandomProvider>();
 builder.Services.AddTransient<IDateTimeProvider, SystemDateTimeProvider>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IRepository<Prediction>, Repository<Prediction>>();
-builder.Services.AddScoped<IRepository<Motivation>, Repository<Motivation>>();
+builder.Services.AddScoped<IPredictionRepository, PredictionRepository>();
+builder.Services.AddScoped<IMotivationRepository, MotivationRepository>();
 builder.Services.AddScoped<IPredictionService, PredictionService>();
 builder.Services.AddScoped<IMotivationService, MotivationService>();
 builder.Services.AddScoped<IEventHandler<PredictionCreatedEvent>, PredictionCreatedEventHandler>();

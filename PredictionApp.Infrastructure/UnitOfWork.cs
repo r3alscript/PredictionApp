@@ -13,17 +13,17 @@ namespace PredictionApp.Infrastructure.Repositories
     {
         private readonly PredictionAppDbContext _context;
 
-        public IRepository<Prediction> Predictions { get; }
-        public IRepository<Motivation> Motivations { get; }
+        public IPredictionRepository Predictions { get; }
+        public IMotivationRepository Motivations { get; }
 
         public UnitOfWork(
             PredictionAppDbContext context,
-            IRepository<Prediction> predictions,
-            IRepository<Motivation> motivations)
+            IPredictionRepository predictionRepo,
+            IMotivationRepository motivationRepo)
         {
             _context = context;
-            Predictions = predictions;
-            Motivations = motivations;
+            Predictions = predictionRepo;
+            Motivations = motivationRepo;
         }
 
         public async Task<int> CompleteAsync() => await _context.SaveChangesAsync();

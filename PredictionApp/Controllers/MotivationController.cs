@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PredictionApp.Domain.DTOs;
 using PredictionApp.Domain.Interfaces;
 
 namespace PredictionApp.Controllers
@@ -15,15 +16,10 @@ namespace PredictionApp.Controllers
         }
 
         [HttpGet("today")]
-        public async Task<IActionResult> Get()
+        public async Task<ActionResult<MotivationDto>> Get()
         {
             var motivation = await _service.GetRandomMotivationAsync();
-            return Ok(new
-            {
-                date = DateTime.Today,
-                motivation.Id,
-                motivation.Message
-            });
+            return Ok(motivation);
         }
     }
 }

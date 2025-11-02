@@ -12,6 +12,8 @@ using PredictionApp.Infrastructure.Events;
 using PredictionApp.Infrastructure.Utilities;
 using PredictionApp.Domain.Entities;
 using PredictionApp.Infrastructure.Repositories;
+using AutoMapper;
+using PredictionApp.Domain.MappingProfiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +33,7 @@ builder.Services.AddScoped<IMotivationService, MotivationService>();
 builder.Services.AddScoped<IEventHandler<PredictionCreatedEvent>, PredictionCreatedEventHandler>();
 builder.Services.AddScoped<IEventHandler<MotivationCreatedEvent>, MotivationCreatedEventHandler>();
 
+builder.Services.AddAutoMapper(typeof(AppMappingProfile));
 
 
 builder.Services.AddControllers(options =>

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PredictionApp.Domain;
+using PredictionApp.Domain.DTOs;
 using PredictionApp.Domain.Interfaces;
 
 namespace PredictionApp.API.Controllers
@@ -10,10 +11,13 @@ namespace PredictionApp.API.Controllers
     {
         private readonly IPredictionService _service;
 
-        public PredictionsController(IPredictionService service) => _service = service;
+        public PredictionsController(IPredictionService service)
+        {
+            _service = service;
+        }
 
         [HttpGet("random")]
-        public async Task<IActionResult> GetRandom()
+        public async Task<ActionResult<PredictionDto>> GetRandom()
         {
             var result = await _service.GetRandomPredictionAsync();
             return Ok(result);

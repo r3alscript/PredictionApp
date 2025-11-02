@@ -1,4 +1,6 @@
-﻿using PredictionApp.Domain.Entities;
+﻿using AutoMapper;
+using PredictionApp.Domain.DTOs;
+using PredictionApp.Domain.Entities;
 using PredictionApp.Domain.Events;
 using PredictionApp.Domain.Interfaces;
 using System.Linq;
@@ -11,27 +13,30 @@ namespace PredictionApp.Domain.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEventHandler<MotivationCreatedEvent> _eventHandler;
         private readonly IRandomProvider _randomProvider;
+        private readonly IMapper _mapper;
 
         public MotivationService(
             IUnitOfWork unitOfWork,
             IEventHandler<MotivationCreatedEvent> eventHandler,
-            IRandomProvider randomProvider)
+            IRandomProvider randomProvider,
+            IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _eventHandler = eventHandler;
             _randomProvider = randomProvider;
+            _mapper = mapper;
         }
 
-        public async Task<Motivation> GetRandomMotivationAsync()
+        public async Task<MotivationDto> GetRandomMotivationAsync()
         {
             var all = (await _unitOfWork.Motivations.GetAllAsync()).ToList();
-
             if (all.Count == 0)
-                return new Motivation { Message = "Motivation seems lost. But you can still do it!" };
+                return new MotivationDto { Message = "Motivation seems lost. But you can still do it!" };
 
             var randomMotivation = all[_randomProvider.Next(all.Count)];
             _eventHandler.Handle(new MotivationCreatedEvent(randomMotivation.Id));
-            return randomMotivation;
+
+            return _mapper.Map<MotivationDto>(randomMotivation);
         }
     }
 }

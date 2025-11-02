@@ -1,4 +1,5 @@
-﻿using PredictionApp.Domain.Entities;
+﻿using PredictionApp.Domain.DTOs;
+using PredictionApp.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace PredictionApp.Domain.Interfaces
 {
     public interface IPredictionService
     {
-        Task<Prediction> GetRandomPredictionAsync();
+        Task<PredictionDto> GetRandomPredictionAsync();
     }
 }

@@ -14,6 +14,9 @@ using PredictionApp.Domain.Entities;
 using PredictionApp.Infrastructure.Repositories;
 using AutoMapper;
 using PredictionApp.Domain.MappingProfiles;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using PredictionApp.Domain.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +37,12 @@ builder.Services.AddScoped<IEventHandler<PredictionCreatedEvent>, PredictionCrea
 builder.Services.AddScoped<IEventHandler<MotivationCreatedEvent>, MotivationCreatedEventHandler>();
 
 builder.Services.AddAutoMapper(typeof(AppMappingProfile));
+
+builder.Services.AddControllers()
+    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<PredictionValidator>());
+
+builder.Services.AddControllers()
+    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<MotivationValidator>());
 
 
 builder.Services.AddControllers(options =>

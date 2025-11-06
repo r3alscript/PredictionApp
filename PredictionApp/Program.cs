@@ -17,6 +17,8 @@ using PredictionApp.Domain.MappingProfiles;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using PredictionApp.Domain.Validators;
+using Enyim.Caching.Configuration;
+using Enyim.Caching;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +46,13 @@ builder.Services.AddControllers()
 builder.Services.AddControllers()
     .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<MotivationValidator>());
 
+builder.Services.AddEnyimMemcached(options =>
+{
+    options.AddServer("localhost", 11211); 
+});
+
+builder.Services.AddSingleton<IMemcachedClient, MemcachedClient>();
+
 
 builder.Services.AddControllers(options =>
 {
@@ -67,6 +76,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.Use(async (context, next) =>
+{
+    Console.WriteLine($"[{DateTime.UtcNow}] Request: {context.Request.Method} {context.Request.Path}");
+    await next();
+});
 
 app.UseDefaultFiles();
 

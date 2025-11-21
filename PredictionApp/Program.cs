@@ -41,11 +41,17 @@ builder.Services.AddScoped<IEventHandler<MotivationCreatedEvent>, MotivationCrea
 
 builder.Services.AddAutoMapper(typeof(AppMappingProfile));
 
-builder.Services.AddControllers()
-    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<PredictionValidator>());
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<GlobalExceptionFilter>();
+});
 
-builder.Services.AddControllers()
-    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<MotivationValidator>());
+builder.Services.AddValidatorsFromAssemblyContaining<PredictionValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<MotivationValidator>();
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+
 
 builder.Services.AddEnyimMemcached(options =>
 {
@@ -54,11 +60,6 @@ builder.Services.AddEnyimMemcached(options =>
 
 builder.Services.AddSingleton<IMemcachedClient, MemcachedClient>();
 
-
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add<GlobalExceptionFilter>();
-});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
-using System;
+using PredictionApp.Domain.Exceptions;
 
 namespace PredictionApp.Filters
 {
@@ -16,18 +16,53 @@ namespace PredictionApp.Filters
 
         public void OnException(ExceptionContext context)
         {
-            _logger.LogError(context.Exception, "Exception in controller");
+            var ex = context.Exception;
 
-            var response = new
-            {
-                message = "An error occurred while processing your request.",
-                exception = context.Exception.Message
-            };
+            _logger.LogError(ex, "Unhandled exception: {Message}", ex.Message);
 
-            context.Result = new ObjectResult(response)
+            if (ex is NotFoundException)
             {
-                StatusCode = 500
-            };
+                context.Result = new NotFoundObjectResult(new
+                {
+                    error = ex.Message,
+                    type = "NotFound"
+                });
+            }
+            else if (ex is ValidationException)
+            {
+                context.Result = new BadRequestObjectResult(new
+                {
+                    error = ex.Message,
+                    type = "ValidationError"
+                });
+            }
+            else if (ex is BusinessException businessEx)
+            {
+                _logger.LogWarning(ex,
+                    "BusinessException occurred. Message={Message}, Path={Path}, Method={Method}",
+                    businessEx.Message,
+                    context.HttpContext.Request.Path,
+                    context.HttpContext.Request.Method);
+
+                context.HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+                context.Result = new BadRequestObjectResult(new
+                {
+                    error = businessEx.Message,
+                    type = "BusinessError",
+                    path = context.HttpContext.Request.Path,
+                    method = context.HttpContext.Request.Method
+                });
+            }
+            else
+            {
+                context.Result = new ObjectResult(new
+                {
+                    error = "Internal Server Error",
+                    details = ex.Message
+                })
+                { StatusCode = 500 };
+            }
 
             context.ExceptionHandled = true;
         }

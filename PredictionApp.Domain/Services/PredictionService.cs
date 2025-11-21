@@ -40,31 +40,42 @@ namespace PredictionApp.Domain.Services
         public async Task<PredictionDto> GetRandomPredictionAsync()
         {
             const string cacheKey = "all_predictions";
-            var cacheResult = await _cache.GetAsync<List<PredictionDto>>(cacheKey);
 
-            List<PredictionDto> predictions;
-
-            if (cacheResult.HasValue)
+            try
             {
-                _logger.LogInformation("Got all predictions from cache.");
-                predictions = cacheResult.Value;
+                var cacheResult = await _cache.GetAsync<List<PredictionDto>>(cacheKey);
+
+                List<PredictionDto> predictions;
+
+                if (cacheResult.HasValue)
+                {
+                    _logger.LogInformation("Got all predictions from cache.");
+                    predictions = cacheResult.Value;
+                }
+                else
+                {
+                    var all = (await _unitOfWork.Predictions.GetAllAsync()).ToList();
+                    predictions = all.Select(p => _mapper.Map<PredictionDto>(p)).ToList();
+
+                    await _cache.SetAsync(cacheKey, predictions, TimeSpan.FromMinutes(5));
+                    _logger.LogInformation("Saved all predictions to Memcached for 5 mins.");
+                }
+
+                if (predictions.Count == 0)
+                    return new PredictionDto { Message = "No predictions available." };
+
+                var randomPrediction = predictions[_randomProvider.Next(predictions.Count)];
+
+                _eventHandler.Handle(new PredictionCreatedEvent(randomPrediction.Id));
+
+                return randomPrediction;
             }
-            else
+            catch (Exception ex)
             {
-                var all = (await _unitOfWork.Predictions.GetAllAsync()).ToList();
-                predictions = all.Select(p => _mapper.Map<PredictionDto>(p)).ToList();
-
-                await _cache.SetAsync(cacheKey, predictions, TimeSpan.FromMinutes(5));
-                _logger.LogInformation("Saved all predictions to Memcached for 5 mins.");
+                _logger.LogError(ex, "Error in GetRandomPredictionAsync()");
+                throw; 
             }
-
-            if (predictions.Count == 0)
-                return new PredictionDto { Message = "No predictions available." };
-
-            var randomPrediction = predictions[_randomProvider.Next(predictions.Count)];
-            _eventHandler.Handle(new PredictionCreatedEvent(randomPrediction.Id));
-
-            return randomPrediction;
         }
     }
 }
+

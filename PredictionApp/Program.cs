@@ -18,6 +18,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using PredictionApp.Domain.Validators;
 using Enyim.Caching.Configuration;
+using Microsoft.Extensions.Logging;
 using Enyim.Caching;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -77,9 +78,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
 app.Use(async (context, next) =>
 {
-    Console.WriteLine($"[{DateTime.UtcNow}] Request: {context.Request.Method} {context.Request.Path}");
+    logger.LogInformation($"[{DateTime.UtcNow}] Request: {context.Request.Method} {context.Request.Path}");
     await next();
 });
 

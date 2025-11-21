@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Enyim.Caching;
+using Microsoft.Extensions.Logging;
 using PredictionApp.Domain.DTOs;
 using PredictionApp.Domain.Entities;
 using PredictionApp.Domain.Events;
@@ -18,19 +19,22 @@ namespace PredictionApp.Domain.Services
         private readonly IRandomProvider _randomProvider;
         private readonly IMapper _mapper;
         private readonly IMemcachedClient _cache;
+        private readonly ILogger _logger;
 
         public PredictionService(
             IUnitOfWork unitOfWork,
             IEventHandler<PredictionCreatedEvent> eventHandler,
             IRandomProvider randomProvider,
             IMapper mapper,
-            IMemcachedClient cache)
+            IMemcachedClient cache,
+            ILogger<PredictionService> logger)
         {
             _unitOfWork = unitOfWork;
             _eventHandler = eventHandler;
             _randomProvider = randomProvider;
             _mapper = mapper;
             _cache = cache;
+            _logger = logger;
         }
 
         public async Task<PredictionDto> GetRandomPredictionAsync()
@@ -42,7 +46,7 @@ namespace PredictionApp.Domain.Services
 
             if (cacheResult.HasValue)
             {
-                Console.WriteLine("Got all predictions from cache.");
+                _logger.LogInformation("Got all predictions from cache.");
                 predictions = cacheResult.Value;
             }
             else
@@ -51,7 +55,7 @@ namespace PredictionApp.Domain.Services
                 predictions = all.Select(p => _mapper.Map<PredictionDto>(p)).ToList();
 
                 await _cache.SetAsync(cacheKey, predictions, TimeSpan.FromMinutes(5));
-                Console.WriteLine("Saved all predictions to Memcached for 5 mins.");
+                _logger.LogInformation("Saved all predictions to Memcached for 5 mins.");
             }
 
             if (predictions.Count == 0)

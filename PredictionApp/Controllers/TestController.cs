@@ -37,5 +37,26 @@ namespace PredictionApp.Controllers
             await _unitOfWork.CompleteAsync();
             return Ok("Motivation created successfully.");
         }
+
+        [HttpPost("create-both")]
+        public async Task<IActionResult> CreateBoth([FromBody] string message)
+        {
+            var prediction = new Prediction
+            {
+                Message = message + " (Prediction) ",
+            };
+
+            var motivation = new Motivation
+            {
+                Message = message + " (Motivation)",
+            };
+
+            await _unitOfWork.Predictions.AddAsync(prediction);
+            await _unitOfWork.Motivations.AddAsync(motivation);
+
+            await _unitOfWork.CompleteAsync();
+
+            return Ok("Prediction + Motivation created in one transaction");
+        }
     }
 }

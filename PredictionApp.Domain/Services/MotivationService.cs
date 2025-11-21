@@ -6,6 +6,7 @@ using PredictionApp.Domain.Events;
 using PredictionApp.Domain.Interfaces;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace PredictionApp.Domain.Services
 {
@@ -16,19 +17,22 @@ namespace PredictionApp.Domain.Services
         private readonly IRandomProvider _randomProvider;
         private readonly IMapper _mapper;
         private readonly IMemcachedClient _cache;
+        private readonly ILogger _logger;
 
         public MotivationService(
             IUnitOfWork unitOfWork,
             IEventHandler<MotivationCreatedEvent> eventHandler,
             IRandomProvider randomProvider,
             IMapper mapper,
-            IMemcachedClient cache)
+            IMemcachedClient cache,
+            ILogger<MotivationService> logger)
         {
             _unitOfWork = unitOfWork;
             _eventHandler = eventHandler;
             _randomProvider = randomProvider;
             _mapper = mapper;
             _cache = cache;
+            _logger = logger;
         }
 
         public async Task<MotivationDto> GetRandomMotivationAsync()
@@ -40,7 +44,7 @@ namespace PredictionApp.Domain.Services
 
             if (cacheResult.HasValue)
             {
-                Console.WriteLine("Got all motivations from cache.");
+                _logger.LogInformation("Got all motivations from cache.");
                 motivations = cacheResult.Value;
             }
             else
@@ -49,7 +53,7 @@ namespace PredictionApp.Domain.Services
                 motivations = all.Select(m => _mapper.Map<MotivationDto>(m)).ToList();
 
                 await _cache.SetAsync(cacheKey, motivations, TimeSpan.FromMinutes(5));
-                Console.WriteLine("Saved all motivations to Memcached for 5 mins.");
+                _logger.LogInformation("Saved all motivations to Memcached for 5 mins.");
             }
 
             if (motivations.Count == 0)
